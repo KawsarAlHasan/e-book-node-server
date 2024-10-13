@@ -11,7 +11,7 @@ exports.createMainToc = async (req, res) => {
       });
     }
 
-    // Insert category into the database
+    // Insert main toc into the database
     const [result] = await db.query(
       "INSERT INTO main_toc (book_id, title, page_number) VALUES (?, ?, ?)",
       [book_id, title, page_number]
@@ -138,7 +138,7 @@ exports.updateMainTOC = async (req, res) => {
       ]
     );
 
-    // Check if the sub-category was updated successfully
+    // Check if the main toc was updated successfully
     if (result.affectedRows === 0) {
       return res.status(404).send({
         success: false,
