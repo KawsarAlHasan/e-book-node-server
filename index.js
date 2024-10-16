@@ -25,6 +25,9 @@ app.use("/api/v1/admin", require("./routes/adminRoute"));
 app.use("/api/v1/book", require("./routes/booksRoute"));
 app.use("/api/v1/main-toc", require("./routes/mainTocRoute"));
 app.use("/api/v1/sub-toc", require("./routes/subTocRoute"));
+app.use("/api/v1/paragraph", require("./routes/paragraphRoute"));
+app.use("/api/v1/favorite", require("./routes/favoriteBooksRoute"));
+app.use("/api/v1/delivery-address", require("./routes/deliveryAddressRoute"));
 
 const port = process.env.PORT || 5000;
 
