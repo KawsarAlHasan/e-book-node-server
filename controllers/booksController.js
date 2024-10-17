@@ -5,6 +5,7 @@ exports.createBooks = async (req, res) => {
   try {
     const {
       book_name,
+      category_id,
       author,
       title,
       publisher,
@@ -26,9 +27,10 @@ exports.createBooks = async (req, res) => {
 
     // Insert books into the database
     const [result] = await db.query(
-      "INSERT INTO books (book_name, author, title,	publisher, publication_year, first_edition_year, last_edition_year, publisher_name, price, dedication, author_bio, introduction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO books (book_name, category_id, author, title,	publisher, publication_year, first_edition_year, last_edition_year, publisher_name, price, dedication, author_bio, introduction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         book_name,
+        category_id,
         author,
         title || "NULL",
         publisher || "NULL",
@@ -68,13 +70,11 @@ exports.createBooks = async (req, res) => {
 // get all Books
 exports.getAllBooks = async (req, res) => {
   try {
-    const [data] = await db.query("SELECT * FROM books");
-    if (!data || data.length == 0) {
-      return res.status(200).send({
-        success: true,
-        message: "No Books found",
-      });
-    }
+    const [data] = await db.query(`
+      SELECT books.*, category.name AS category_name, category.image AS category_image
+      FROM books
+      LEFT JOIN category ON books.category_id = category.id
+    `);
 
     res.status(200).send({
       success: true,
@@ -96,12 +96,16 @@ exports.getSingleBooksById = async (req, res) => {
   try {
     const book_id = req.params.id;
 
-    const [data] = await db.query("SELECT * FROM books WHERE book_id =?", [
-      book_id,
-    ]);
+    const [data] = await db.query(
+      `SELECT books.*, category.name AS category_name, category.image AS category_image
+       FROM books
+       LEFT JOIN category ON books.category_id = category.id
+       WHERE books.book_id = ?`,
+      [book_id]
+    );
     if (!data || data.length == 0) {
-      return res.status(200).send({
-        success: true,
+      return res.status(404).send({
+        success: false,
         message: "No Books Found found",
       });
     }
@@ -127,6 +131,7 @@ exports.updateBook = async (req, res) => {
 
     const {
       book_name,
+      category_id,
       author,
       title,
       publisher,
@@ -155,9 +160,10 @@ exports.updateBook = async (req, res) => {
 
     // Execute the update query
     const [result] = await db.query(
-      `UPDATE books SET book_name=?, author=?, title =?, publisher=?, publication_year=?, first_edition_year=?, last_edition_year=?, publisher_name=?, price=?, dedication=?, author_bio=?, introduction=? WHERE book_id = ?`,
+      `UPDATE books SET book_name=?, category_id=?, author=?, title =?, publisher=?, publication_year=?, first_edition_year=?, last_edition_year=?, publisher_name=?, price=?, dedication=?, author_bio=?, introduction=? WHERE book_id = ?`,
       [
         book_name || existingBook[0].book_name,
+        category_id || existingBook[0].category_id,
         author || existingBook[0].author,
         title || existingBook[0].title,
         publisher || existingBook[0].publisher,
