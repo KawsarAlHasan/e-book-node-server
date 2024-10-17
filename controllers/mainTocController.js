@@ -42,11 +42,16 @@ exports.createMainToc = async (req, res) => {
 // get all main toc
 exports.getAllMainToc = async (req, res) => {
   try {
-    const [data] = await db.query("SELECT * FROM main_toc");
+    const book_id = req.params.id;
+
+    const [data] = await db.query("SELECT * FROM main_toc WHERE book_id=?", [
+      book_id,
+    ]);
     if (!data || data.length == 0) {
       return res.status(200).send({
         success: true,
         message: "No main toc found",
+        data: [],
       });
     }
 
