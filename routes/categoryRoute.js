@@ -3,7 +3,7 @@ const {
   createCategory,
   getCategory,
   updateCategory,
-} = require("../controllers/CategoryController");
+} = require("../controllers/categoryController");
 
 const router = express.Router();
 
