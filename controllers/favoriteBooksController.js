@@ -79,122 +79,18 @@ exports.getAllFavoriteBooks = async (req, res) => {
     const user_id = req.decodedUser.id;
     const userData = req.decodedUser;
 
-    const [data] = await db.query(`SELECT * FROM favorite WHERE user_id = ?`, [
-      user_id,
-    ]);
-
-    // const favoritePromises = data.map(async (item) => {
-    //   // Modify this query to include category_image and category_name
-    //   const [product] = await db.query(
-    //     `SELECT p.*, c.category_image, c.category_name
-    //      FROM products p
-    //      LEFT JOIN categories c ON p.category_id = c.id
-    //      WHERE p.id = ?`,
-    //     [item.product_id]
-    //   );
-
-    //   if (product && product.length > 0) {
-    //     item.name = product[0].name;
-    //     item.category_id = product[0].category_id;
-    //     item.product_type = product[0].product_type;
-    //     item.unit = product[0].unit;
-    //     item.long_description = product[0].long_description;
-    //     item.short_description = product[0].short_description;
-    //     item.status = product[0].status;
-    //     item.tax = product[0].tax;
-    //     item.country = product[0].country;
-    //     item.is_stock = product[0].is_stock;
-    //     item.created_at = product[0].created_at;
-    //     item.updated_at = product[0].updated_at;
-    //     item.purchase_price = product[0].purchase_price;
-    //     item.regular_price = product[0].regular_price;
-    //     item.selling_price = product[0].selling_price;
-    //     item.whole_price = product[0].whole_price;
-    //     item.discount_price = product[0].discount_price;
-
-    //     // Add category_image and category_name
-    //     item.category_image = product[0].category_image;
-    //     item.category_name = product[0].category_name;
-
-    //     // Fetch images related to the product
-    //     const [images] = await db.query(
-    //       `SELECT id, image_url FROM product_images WHERE product_id = ?`,
-    //       [item.product_id]
-    //     );
-    //     item.images = images.length
-    //       ? images.map((image) => ({
-    //           image_id: image.id,
-    //           image_url: image.image_url,
-    //         }))
-    //       : [];
-
-    //     // Fetch variants related to the product
-    //     const [variants] = await db.query(
-    //       `SELECT id, variant_name, variant_value FROM product_variants WHERE product_id = ?`,
-    //       [item.product_id]
-    //     );
-    //     item.variants = variants.map((variant) => ({
-    //       variant_id: variant.id,
-    //       variant_name: variant.variant_name,
-    //       variant_value: variant.variant_value,
-    //     }));
-
-    //     // Fetch subcategories related to the product
-    //     const [subcategories] = await db.query(
-    //       `SELECT * FROM product_sub_categories WHERE product_id = ?`,
-    //       [item.product_id]
-    //     );
-
-    //     const subcategoryPromises = subcategories.map(async (subCategory) => {
-    //       const [subcategoryDetails] = await db.query(
-    //         `SELECT id, image, name FROM sub_categories WHERE id = ?`,
-    //         [subCategory.sub_category_id]
-    //       );
-    //       return subcategoryDetails.length
-    //         ? {
-    //             subCategory_id: subcategoryDetails[0].id,
-    //             subCategory_image: subcategoryDetails[0].image,
-    //             subCategory_name: subcategoryDetails[0].name,
-    //           }
-    //         : null;
-    //     });
-
-    //     item.subcategories = await Promise.all(subcategoryPromises);
-
-    //     // Fetch tags related to the product
-    //     const [tags] = await db.query(
-    //       `SELECT tag_name FROM product_tags WHERE product_id = ?`,
-    //       [item.product_id]
-    //     );
-    //     item.tags = tags.map((tag) => tag.tag_name);
-    //   } else {
-    //     item.name = null;
-    //     item.category_id = null;
-    //     item.product_type = null;
-    //     item.unit = null;
-    //     item.long_description = null;
-    //     item.short_description = null;
-    //     item.status = null;
-    //     item.tax = null;
-    //     item.country = null;
-    //     item.is_stock = null;
-    //     item.created_at = null;
-    //     item.updated_at = null;
-    //     item.purchase_price = null;
-    //     item.regular_price = null;
-    //     item.selling_price = null;
-    //     item.whole_price = null;
-    //     item.discount_price = null;
-    //     item.images = [];
-    //     item.variants = [];
-    //     item.subcategories = [];
-    //     item.tags = [];
-    //     item.category_image = null;
-    //     item.category_name = null;
-    //   }
-    // });
-
-    // await Promise.all(favoritePromises);
+    // Query to join favorite and book table to fetch book details
+    const [data] = await db.query(
+      `SELECT 
+        f.favorite_id, 
+        f.user_id, 
+        f.book_id, 
+        b.author
+      FROM favorite f 
+      JOIN books b ON f.book_id = b.book_id 
+      WHERE f.user_id = ?`,
+      [user_id]
+    );
 
     res.status(200).send({
       success: true,

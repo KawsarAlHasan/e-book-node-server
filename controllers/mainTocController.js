@@ -61,6 +61,7 @@ exports.getAllMainTocWithSubToc = async (req, res) => {
         st.title AS sub_toc_name,
         st.book_id AS sub_toc_book_id,
         st.page_number AS sub_toc_page_number,
+        st.look_status AS sub_toc_look_status,
         st.is_paragraph AS sub_toc_is_paragraph,
         st.created_at AS sub_toc_created_at,
         st.updated_at AS sub_toc_updated_at
@@ -106,6 +107,7 @@ exports.getAllMainTocWithSubToc = async (req, res) => {
         sub_toc_main_toc_id,
         sub_toc_name,
         sub_toc_page_number,
+        sub_toc_look_status,
         sub_toc_is_paragraph,
         sub_toc_created_at,
         sub_toc_updated_at,
@@ -132,6 +134,7 @@ exports.getAllMainTocWithSubToc = async (req, res) => {
           main_toc_id: sub_toc_main_toc_id,
           name: sub_toc_name,
           page_number: sub_toc_page_number,
+          look_status: sub_toc_look_status,
           is_paragraph: sub_toc_is_paragraph,
           created_at: sub_toc_created_at,
           updated_at: sub_toc_updated_at,
