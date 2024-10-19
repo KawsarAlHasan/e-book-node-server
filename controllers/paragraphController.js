@@ -33,6 +33,10 @@ exports.createParagraph = async (req, res) => {
       });
     }
 
+    await db.query("UPDATE sub_toc SET is_paragraph = 1 WHERE sub_toc_id = ?", [
+      sub_toc_id,
+    ]);
+
     const paraID = result.insertId;
 
     if (mark_text) {
