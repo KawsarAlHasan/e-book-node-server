@@ -3,7 +3,14 @@ const db = require("../config/db");
 // create paragraph
 exports.createParagraph = async (req, res) => {
   try {
-    const { book_id, main_toc_id, sub_toc_id, content, page_number } = req.body;
+    const {
+      book_id,
+      main_toc_id,
+      sub_toc_id,
+      content,
+      page_number,
+      mark_text,
+    } = req.body;
     if (!book_id || !main_toc_id || !sub_toc_id || !content || !page_number) {
       return res.status(400).send({
         success: false,
@@ -26,6 +33,19 @@ exports.createParagraph = async (req, res) => {
       });
     }
 
+    const paraID = result.insertId;
+
+    if (mark_text) {
+      const markTextQuery =
+        "INSERT INTO mark_text (para_id, text, definition) VALUES ?";
+      const markTextValues = mark_text.map((markText) => [
+        paraID,
+        markText.text,
+        markText.definition,
+      ]);
+      await db.query(markTextQuery, [markTextValues]);
+    }
+
     // Send success response
     res.status(200).send({
       success: true,
@@ -40,33 +60,15 @@ exports.createParagraph = async (req, res) => {
   }
 };
 
-// get all paragraph
-exports.getAllParagraph = async (req, res) => {
-  try {
-    const [data] = await db.query("SELECT * FROM paragraph");
-
-    res.status(200).send({
-      success: true,
-      message: "Get All paragraph",
-      data: data,
-    });
-  } catch (error) {
-    res.status(500).send({
-      success: false,
-      message: "Error in Get All paragraph",
-      error: error.message,
-    });
-  }
-};
-
-// get single paragraph
+// get paragraph
 exports.getSingleParagraph = async (req, res) => {
   try {
-    const para_id = req.params.id;
+    const sub_toc_id = req.params.id;
 
-    const [data] = await db.query("SELECT * FROM paragraph WHERE para_id =?", [
-      para_id,
-    ]);
+    const [data] = await db.query(
+      "SELECT * FROM paragraph WHERE sub_toc_id =?",
+      [sub_toc_id]
+    );
     if (!data || data.length == 0) {
       return res.status(404).send({
         success: true,
@@ -74,10 +76,16 @@ exports.getSingleParagraph = async (req, res) => {
       });
     }
 
+    const [markTextData] = await db.query(
+      "SELECT * FROM mark_text WHERE para_id =?",
+      [data[0].para_id]
+    );
+
     res.status(200).send({
       success: true,
       message: "Get Single paragraph",
-      data: data[0],
+      data: data,
+      markTextData,
     });
   } catch (error) {
     res.status(500).send({

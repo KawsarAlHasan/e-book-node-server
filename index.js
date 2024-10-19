@@ -17,6 +17,7 @@ app.options("*", cors(globalCorsOptions));
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use("/public", express.static(path.join(__dirname, "public")));
 
@@ -28,6 +29,7 @@ app.use("/api/v1/sub-toc", require("./routes/subTocRoute"));
 app.use("/api/v1/paragraph", require("./routes/paragraphRoute"));
 app.use("/api/v1/category", require("./routes/bookCategoryRoute"));
 app.use("/api/v1/favorite", require("./routes/favoriteBooksRoute"));
+app.use("/api/v1/order", require("./routes/orderRoute"));
 app.use("/api/v1/delivery-address", require("./routes/deliveryAddressRoute"));
 
 const port = process.env.PORT || 5000;

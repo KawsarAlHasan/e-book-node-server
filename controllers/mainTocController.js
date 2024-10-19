@@ -3,18 +3,19 @@ const db = require("../config/db");
 // create main toc
 exports.createMainToc = async (req, res) => {
   try {
-    const { book_id, title, page_number } = req.body;
-    if (!book_id || !title || !page_number) {
+    const { book_id, title, page_number, look_status } = req.body;
+    if (!book_id || !title || !page_number || !look_status) {
       return res.status(400).send({
         success: false,
-        message: "Please provide book_id, title & page_number field",
+        message:
+          "Please provide book_id, title, page_number & look_status field",
       });
     }
 
     // Insert main toc into the database
     const [result] = await db.query(
-      "INSERT INTO main_toc (book_id, title, page_number) VALUES (?, ?, ?)",
-      [book_id, title, page_number]
+      "INSERT INTO main_toc (book_id, title, page_number, look_status) VALUES (?, ?, ?, ?)",
+      [book_id, title, page_number, look_status]
     );
 
     // Check if the insertion was successful
@@ -52,6 +53,7 @@ exports.getAllMainTocWithSubToc = async (req, res) => {
         mt.title AS main_toc_name,
         mt.book_id AS book_id,
         mt.page_number AS main_toc_page_number,
+        mt.look_status AS main_toc_look_status,
         mt.created_at AS main_toc_created_at,
         mt.updated_at AS main_toc_updated_at,
         st.sub_toc_id AS sub_toc_id,
@@ -81,7 +83,7 @@ exports.getAllMainTocWithSubToc = async (req, res) => {
     // Fetch related book info
     const [book] = await db.query(
       `
-      SELECT books.*, category.name AS category_name, category.image AS category_image
+      SELECT books.*, category.name AS category_name
       FROM books
       LEFT JOIN category ON books.category_id = category.id
       WHERE books.book_id = ?
@@ -96,6 +98,7 @@ exports.getAllMainTocWithSubToc = async (req, res) => {
         main_toc_id,
         main_toc_name,
         main_toc_page_number,
+        main_toc_look_status,
         main_toc_created_at,
         main_toc_updated_at,
         sub_toc_id,
@@ -113,6 +116,7 @@ exports.getAllMainTocWithSubToc = async (req, res) => {
           name: main_toc_name,
           book_id: book_id,
           page_number: main_toc_page_number,
+          look_status: main_toc_look_status,
           created_at: main_toc_created_at,
           updated_at: main_toc_updated_at,
           sub_tocs: [],
@@ -170,7 +174,7 @@ exports.getAllMainToc = async (req, res) => {
     }
 
     const [book] = await db.query(
-      `SELECT books.*, category.name AS category_name, category.image AS category_image
+      `SELECT books.*, category.name AS category_name
        FROM books
        LEFT JOIN category ON books.category_id = category.id
        WHERE books.book_id = ?`,
@@ -216,7 +220,7 @@ exports.getSingleMainToc = async (req, res) => {
     }
 
     const [book] = await db.query(
-      `SELECT books.*, category.name AS category_name, category.image AS category_image
+      `SELECT books.*, category.name AS category_name
        FROM books
        LEFT JOIN category ON books.category_id = category.id
        WHERE books.book_id = ?`,
@@ -250,7 +254,7 @@ exports.updateMainTOC = async (req, res) => {
       });
     }
 
-    const { title, page_number } = req.body;
+    const { title, page_number, look_status } = req.body;
 
     // Check if Main Toc exists
     const [existingMainToc] = await db.query(
@@ -267,10 +271,11 @@ exports.updateMainTOC = async (req, res) => {
 
     // Execute the update query
     const [result] = await db.query(
-      "UPDATE main_toc SET title = ?, page_number= ? WHERE main_toc_id = ?",
+      "UPDATE main_toc SET title = ?, page_number= ?, look_status=? WHERE main_toc_id = ?",
       [
         title || existingMainToc[0].title,
         page_number || existingMainToc[0].page_number,
+        look_status || existingMainToc[0].look_status,
         main_toc_id,
       ]
     );

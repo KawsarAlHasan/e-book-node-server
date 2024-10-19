@@ -10,7 +10,7 @@ const {
 const router = express.Router();
 
 router.post("/create", createSubToc);
-router.get("/all", getAllSubToc);
+router.get("/all/:id", getAllSubToc);
 router.get("/:id", getSingleSubToc);
 router.put("/update/:id", updateSubTOC);
 router.delete("/delete/:id", deleteSubTOC);

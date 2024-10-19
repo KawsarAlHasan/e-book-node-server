@@ -23,7 +23,7 @@ const uploadImage = multer({
     }
   },
   limits: {
-    fileSize: 2097152, // Less than 2 MB (2 * 1024 * 1024)
+    fileSize: 10097152, // Less than 2 MB (2 * 1024 * 1024)
   },
 });
 

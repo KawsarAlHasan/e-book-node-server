@@ -3,19 +3,19 @@ const db = require("../config/db");
 // create sub toc
 exports.createSubToc = async (req, res) => {
   try {
-    const { main_toc_id, book_id, title, page_number } = req.body;
-    if (!main_toc_id || !book_id || !title || !page_number) {
+    const { main_toc_id, book_id, title, page_number, look_status } = req.body;
+    if (!main_toc_id || !book_id || !title || !page_number || !look_status) {
       return res.status(400).send({
         success: false,
         message:
-          "Please provide main_toc_id, book_id, title & page_number field",
+          "Please provide main_toc_id, book_id, title, page_number & look_status field",
       });
     }
 
     // Insert toc into the database
     const [result] = await db.query(
-      "INSERT INTO sub_toc (main_toc_id, book_id, title, page_number) VALUES (?, ?, ?, ?)",
-      [main_toc_id, book_id, title, page_number]
+      "INSERT INTO sub_toc (main_toc_id, book_id, title, page_number, look_status) VALUES (?, ?, ?, ?, ?)",
+      [main_toc_id, book_id, title, page_number, look_status]
     );
 
     // Check if the insertion was successful
@@ -43,7 +43,12 @@ exports.createSubToc = async (req, res) => {
 // get all sub toc
 exports.getAllSubToc = async (req, res) => {
   try {
-    const [data] = await db.query("SELECT * FROM sub_toc");
+    const main_toc_id = req.params.id;
+
+    const [data] = await db.query(
+      "SELECT * FROM sub_toc WHERE main_toc_id =?",
+      [main_toc_id]
+    );
 
     res.status(200).send({
       success: true,
@@ -107,7 +112,7 @@ exports.updateSubTOC = async (req, res) => {
       });
     }
 
-    const { title, page_number } = req.body;
+    const { title, page_number, look_status } = req.body;
 
     // Check if sub Toc exists
     const [existingSubToc] = await db.query(
@@ -124,10 +129,11 @@ exports.updateSubTOC = async (req, res) => {
 
     // Execute the update query
     const [result] = await db.query(
-      "UPDATE sub_toc SET title = ?, page_number= ? WHERE sub_toc_id = ?",
+      "UPDATE sub_toc SET title = ?, page_number= ?, look_status=? WHERE sub_toc_id = ?",
       [
         title || existingSubToc[0].title,
         page_number || existingSubToc[0].page_number,
+        look_status || existingSubToc[0].look_status,
         sub_toc_id,
       ]
     );

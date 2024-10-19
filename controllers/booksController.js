@@ -8,37 +8,53 @@ exports.createBooks = async (req, res) => {
       category_id,
       author,
       title,
+      language,
       publisher,
       publication_year,
       first_edition_year,
       last_edition_year,
       publisher_name,
+      free_or_paid,
       price,
+      total_pages,
+      sort_description,
       dedication,
       author_bio,
       introduction,
     } = req.body;
-    if (!book_name || !author) {
+
+    if (!book_name || !author || !language) {
       return res.status(400).send({
         success: false,
-        message: "Please provide book_name & author field",
+        message: "Please provide book_name, author & language field",
       });
+    }
+
+    const image = req.file;
+    let bookImage = "";
+    if (image && image.path) {
+      bookImage = `/public/images/${image.filename}`;
     }
 
     // Insert books into the database
     const [result] = await db.query(
-      "INSERT INTO books (book_name, category_id, author, title,	publisher, publication_year, first_edition_year, last_edition_year, publisher_name, price, dedication, author_bio, introduction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO books (book_name, image, category_id, author, title, language, publisher, publication_year, first_edition_year, last_edition_year, publisher_name, free_or_paid, price, total_pages, sort_description, dedication, author_bio, introduction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         book_name,
+        bookImage,
         category_id,
         author,
         title || "NULL",
+        language,
         publisher || "NULL",
         publication_year || "NULL",
         first_edition_year || "NULL",
         last_edition_year || "NULL",
         publisher_name || "NULL",
+        free_or_paid || "Free",
         price || 0,
+        total_pages || 0,
+        sort_description || "",
         dedication || "NULL",
         author_bio || "NULL",
         introduction || "NULL",
@@ -71,7 +87,7 @@ exports.createBooks = async (req, res) => {
 exports.getAllBooks = async (req, res) => {
   try {
     const [data] = await db.query(`
-      SELECT books.*, category.name AS category_name, category.image AS category_image
+      SELECT books.*, category.name AS category_name
       FROM books
       LEFT JOIN category ON books.category_id = category.id
     `);
@@ -97,7 +113,7 @@ exports.getSingleBooksById = async (req, res) => {
     const book_id = req.params.id;
 
     const [data] = await db.query(
-      `SELECT books.*, category.name AS category_name, category.image AS category_image
+      `SELECT books.*, category.name AS category_name
        FROM books
        LEFT JOIN category ON books.category_id = category.id
        WHERE books.book_id = ?`,
@@ -110,10 +126,28 @@ exports.getSingleBooksById = async (req, res) => {
       });
     }
 
+    const [tocCounts] = await db.query(
+      `
+      SELECT 
+        COUNT(DISTINCT mt.main_toc_id) AS main_toc_count,
+        COUNT(st.sub_toc_id) AS sub_toc_count
+      FROM main_toc mt
+      LEFT JOIN sub_toc st ON mt.main_toc_id = st.main_toc_id
+      WHERE mt.book_id = ?
+      `,
+      [book_id]
+    );
+
+    const sendData = {
+      ...data[0],
+      main_toc: tocCounts[0].main_toc_count,
+      sub_toc: tocCounts[0].sub_toc_count,
+    };
+
     res.status(200).send({
       success: true,
       message: "Get Single Books",
-      data: data[0],
+      data: sendData,
     });
   } catch (error) {
     res.status(500).send({
@@ -134,12 +168,16 @@ exports.updateBook = async (req, res) => {
       category_id,
       author,
       title,
+      language,
       publisher,
       publication_year,
       first_edition_year,
       last_edition_year,
       publisher_name,
+      free_or_paid,
       price,
+      total_pages,
+      sort_description,
       dedication,
       author_bio,
       introduction,
@@ -160,18 +198,22 @@ exports.updateBook = async (req, res) => {
 
     // Execute the update query
     const [result] = await db.query(
-      `UPDATE books SET book_name=?, category_id=?, author=?, title =?, publisher=?, publication_year=?, first_edition_year=?, last_edition_year=?, publisher_name=?, price=?, dedication=?, author_bio=?, introduction=? WHERE book_id = ?`,
+      `UPDATE books SET book_name=?, category_id=?, author=?, title =?, language=?, publisher=?, publication_year=?, first_edition_year=?, last_edition_year=?, publisher_name=?, free_or_paid=?, price=?, total_pages=?, sort_description=?, dedication=?, author_bio=?, introduction=? WHERE book_id = ?`,
       [
         book_name || existingBook[0].book_name,
         category_id || existingBook[0].category_id,
         author || existingBook[0].author,
         title || existingBook[0].title,
+        language || existingBook[0].language,
         publisher || existingBook[0].publisher,
         publication_year || existingBook[0].publication_year,
         first_edition_year || existingBook[0].first_edition_year,
         last_edition_year || existingBook[0].last_edition_year,
         publisher_name || existingBook[0].publisher_name,
+        free_or_paid || existingBook[0].free_or_paid,
         price || existingBook[0].price,
+        total_pages || existingBook[0].total_pages,
+        sort_description || existingBook[0].sort_description,
         dedication || existingBook[0].dedication,
         author_bio || existingBook[0].author_bio,
         introduction || existingBook[0].introduction,
