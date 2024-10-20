@@ -5,6 +5,7 @@ exports.createBooks = async (req, res) => {
   try {
     const {
       book_name,
+      image,
       category_id,
       author,
       title,
@@ -23,17 +24,11 @@ exports.createBooks = async (req, res) => {
       introduction,
     } = req.body;
 
-    if (!book_name || !author || !language) {
+    if (!book_name || !image || !author || !language) {
       return res.status(400).send({
         success: false,
-        message: "Please provide book_name, author & language field",
+        message: "Please provide book_name, image, author & language field",
       });
-    }
-
-    const image = req.file;
-    let bookImage = "";
-    if (image && image.path) {
-      bookImage = `/public/images/${image.filename}`;
     }
 
     // Insert books into the database
@@ -41,7 +36,7 @@ exports.createBooks = async (req, res) => {
       "INSERT INTO books (book_name, image, category_id, author, title, language, publisher, publication_year, first_edition_year, last_edition_year, publisher_name, free_or_paid, price, total_pages, sort_description, dedication, author_bio, introduction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         book_name,
-        bookImage,
+        image,
         category_id,
         author,
         title || "NULL",
@@ -165,6 +160,7 @@ exports.updateBook = async (req, res) => {
 
     const {
       book_name,
+      image,
       category_id,
       author,
       title,
@@ -198,9 +194,10 @@ exports.updateBook = async (req, res) => {
 
     // Execute the update query
     const [result] = await db.query(
-      `UPDATE books SET book_name=?, category_id=?, author=?, title =?, language=?, publisher=?, publication_year=?, first_edition_year=?, last_edition_year=?, publisher_name=?, free_or_paid=?, price=?, total_pages=?, sort_description=?, dedication=?, author_bio=?, introduction=? WHERE book_id = ?`,
+      `UPDATE books SET book_name=?, image=?, category_id=?, author=?, title =?, language=?, publisher=?, publication_year=?, first_edition_year=?, last_edition_year=?, publisher_name=?, free_or_paid=?, price=?, total_pages=?, sort_description=?, dedication=?, author_bio=?, introduction=? WHERE book_id = ?`,
       [
         book_name || existingBook[0].book_name,
+        image || existingBook[0].image,
         category_id || existingBook[0].category_id,
         author || existingBook[0].author,
         title || existingBook[0].title,

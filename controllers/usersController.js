@@ -320,20 +320,14 @@ exports.updateUser = async (req, res) => {
     const preAddress = req.decodedUser.address;
     const preProfession = req.decodedUser.profession;
 
-    const { name, phone, address, profession } = req.body;
-
-    const images = req.file;
-    let profileImage = profilePic;
-    if (images && images.path) {
-      profileImage = `/public/images/${images.filename}`;
-    }
+    const { name, profile_pic, phone, address, profession } = req.body;
 
     const [data] = await db.query(
       `UPDATE users SET name=?, phone=?, profile_pic=?, address=?, profession=? WHERE id =?`,
       [
         name || userName,
         phone || userPhone,
-        profileImage,
+        profile_pic || profilePic,
         address || preAddress,
         profession || preProfession,
         userID,

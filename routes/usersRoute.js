@@ -20,12 +20,7 @@ router.get("/all", getAllUsers); //all users for admin
 router.get("/me", verifyUser, getMeUser);
 router.post("/signup", userSignup);
 router.post("/login", userLogin);
-router.put(
-  "/update",
-  uploadImage.single("profile_pic"),
-  verifyUser,
-  updateUser
-);
+router.put("/update", verifyUser, updateUser);
 router.put("/update-password", verifyUser, updateUserPassword);
 router.put("/update-status/:id", updateStatus);
 router.get("/:id", getSingleUser);
