@@ -27,9 +27,11 @@ app.use("/api/v1/book", require("./routes/booksRoute"));
 app.use("/api/v1/main-toc", require("./routes/mainTocRoute"));
 app.use("/api/v1/sub-toc", require("./routes/subTocRoute"));
 app.use("/api/v1/paragraph", require("./routes/paragraphRoute"));
+app.use("/api/v1/mark-text", require("./routes/favoriteMarkText"));
 app.use("/api/v1/category", require("./routes/bookCategoryRoute"));
 app.use("/api/v1/favorite", require("./routes/favoriteBooksRoute"));
 app.use("/api/v1/order", require("./routes/orderRoute"));
+app.use("/api/v1/rating", require("./routes/ratingRoute"));
 app.use("/api/v1/delivery-address", require("./routes/deliveryAddressRoute"));
 
 const port = process.env.PORT || 5000;

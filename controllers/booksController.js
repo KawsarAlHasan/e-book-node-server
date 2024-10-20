@@ -82,9 +82,15 @@ exports.createBooks = async (req, res) => {
 exports.getAllBooks = async (req, res) => {
   try {
     const [data] = await db.query(`
-      SELECT books.*, category.name AS category_name
+      SELECT 
+        books.*, 
+        category.name AS category_name, 
+        COUNT(rating.rating) AS total_ratings, 
+        COALESCE(AVG(rating.rating), 0) AS average_rating
       FROM books
       LEFT JOIN category ON books.category_id = category.id
+      LEFT JOIN rating ON books.book_id = rating.book_id
+      GROUP BY books.book_id
     `);
 
     res.status(200).send({
@@ -121,6 +127,16 @@ exports.getSingleBooksById = async (req, res) => {
       });
     }
 
+    const [averageData] = await db.query(
+      `SELECT AVG(rating) AS average_rating FROM rating WHERE book_id = ?`,
+      [book_id]
+    );
+
+    const [allRatings] = await db.query(
+      `SELECT * FROM rating WHERE book_id = ?`,
+      [book_id]
+    );
+
     const [tocCounts] = await db.query(
       `
       SELECT 
@@ -137,6 +153,9 @@ exports.getSingleBooksById = async (req, res) => {
       ...data[0],
       main_toc: tocCounts[0].main_toc_count,
       sub_toc: tocCounts[0].sub_toc_count,
+      total_rating: allRatings.length,
+      average_rating: averageData[0].average_rating || 0,
+      rating: allRatings,
     };
 
     res.status(200).send({
