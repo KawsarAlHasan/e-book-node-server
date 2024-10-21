@@ -93,7 +93,7 @@ exports.getAllFavoriteMarkText = async (req, res) => {
         mt.updated_at
       FROM favorite_mark_text f 
       JOIN mark_text mt ON f.mark_text_id = mt.id 
-      WHERE f.user_id = ?`,
+      WHERE f.user_id = ? ORDER BY f.id DESC`,
       [user_id]
     );
 

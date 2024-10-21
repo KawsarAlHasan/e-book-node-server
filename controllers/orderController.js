@@ -74,7 +74,7 @@ exports.getMyOrder = async (req, res) => {
         b.*
       FROM orders o 
       JOIN books b ON o.book_id = b.book_id 
-      WHERE o.user_id = ?`,
+      WHERE o.user_id = ? ORDER BY o.id DESC`,
       [user_id]
     );
 
@@ -106,6 +106,7 @@ exports.getAllOrder = async (req, res) => {
         b.*
       FROM orders o 
       JOIN books b ON o.book_id = b.book_id 
+      ORDER BY o.id DESC
       `
     );
 

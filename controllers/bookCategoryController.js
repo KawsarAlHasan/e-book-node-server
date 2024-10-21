@@ -39,7 +39,7 @@ exports.createCategory = async (req, res) => {
 // get category
 exports.getCategory = async (req, res) => {
   try {
-    const [data] = await db.execute("SELECT * FROM category");
+    const [data] = await db.execute("SELECT * FROM category ORDER BY id DESC");
 
     res.status(200).send({
       success: true,

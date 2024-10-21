@@ -91,6 +91,7 @@ exports.getAllBooks = async (req, res) => {
       LEFT JOIN category ON books.category_id = category.id
       LEFT JOIN rating ON books.book_id = rating.book_id
       GROUP BY books.book_id
+      ORDER BY books.book_id DESC
     `);
 
     res.status(200).send({

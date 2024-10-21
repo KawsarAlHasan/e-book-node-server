@@ -43,7 +43,7 @@ exports.createBanner = async (req, res) => {
 // get all banner
 exports.getAllBanner = async (req, res) => {
   try {
-    const [data] = await db.query(`SELECT * FROM banner`);
+    const [data] = await db.query(`SELECT * FROM banner ORDER BY id DESC`);
 
     res.status(200).send({
       success: true,

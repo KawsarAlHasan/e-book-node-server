@@ -70,7 +70,7 @@ exports.getMyDeliveryAddress = async (req, res) => {
     const user_id = req.decodedUser.id;
 
     const [data] = await db.query(
-      "SELECT * FROM delivery_address WHERE user_id =?",
+      "SELECT * FROM delivery_address WHERE user_id =? ORDER BY id DESC",
       [user_id]
     );
 

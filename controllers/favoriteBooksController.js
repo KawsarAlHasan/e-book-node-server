@@ -88,7 +88,7 @@ exports.getAllFavoriteBooks = async (req, res) => {
         b.*
       FROM favorite f 
       JOIN books b ON f.book_id = b.book_id 
-      WHERE f.user_id = ?`,
+      WHERE f.user_id = ? ORDER BY f.favorite_id DESC`,
       [user_id]
     );
 

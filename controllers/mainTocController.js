@@ -68,8 +68,7 @@ exports.getAllMainTocWithSubToc = async (req, res) => {
       FROM main_toc mt
       LEFT JOIN sub_toc st ON mt.main_toc_id = st.main_toc_id
       WHERE mt.book_id = ?
-      ORDER BY mt.main_toc_id DESC
-    `,
+      `,
       [book_id]
     );
 
