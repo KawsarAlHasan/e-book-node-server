@@ -40,152 +40,149 @@ exports.createBanner = async (req, res) => {
   }
 };
 
-// get all paymentMethod
+// get all banner
 exports.getAllBanner = async (req, res) => {
   try {
-    const [data] = await db.query(`SELECT * FROM paymentMethod`);
+    const [data] = await db.query(`SELECT * FROM banner`);
 
     res.status(200).send({
       success: true,
-      message: "Get All paymentMethod",
+      message: "Get All banner",
       data: data,
     });
   } catch (error) {
     res.status(500).send({
       success: false,
-      message: "Error in Get All paymentMethod",
+      message: "Error in Get All banner",
       error: error.message,
     });
   }
 };
 
-// get single PaymentMethod By Id
-exports.getSinglePaymentMethodById = async (req, res) => {
+// get single banner By Id
+exports.getSinglebannerById = async (req, res) => {
   try {
-    const paymentMethodID = req.params.id;
+    const bannerID = req.params.id;
 
-    const [data] = await db.query(`SELECT * FROM paymentMethod WHERE id=?`, [
-      paymentMethodID,
+    const [data] = await db.query(`SELECT * FROM banner WHERE id=?`, [
+      bannerID,
     ]);
     if (!data || data.length == 0) {
       return res.status(404).send({
         success: false,
-        message: "No paymentMethod Found found",
+        message: "Banner Not Found",
       });
     }
 
     res.status(200).send({
       success: true,
-      message: "Get Single paymentMethod",
+      message: "Get Single Banner",
       data: data[0],
     });
   } catch (error) {
     res.status(500).send({
       success: false,
-      message: "Error in Get single paymentMethod",
+      message: "Error in Get single Banner",
       error: error.message,
     });
   }
 };
 
-// update PaymentMethod
+// update Banner
 exports.updateBanner = async (req, res) => {
   try {
-    const paymentMethodID = req.params.id;
+    const bannerID = req.params.id;
 
-    const { logoImage, methodName, acocuntNumber, accountType, charge } =
-      req.body;
+    const { title, image, category_id } = req.body;
 
     // Check if book exists
-    const [existingPaymentMethod] = await db.query(
-      "SELECT * FROM paymentMethod WHERE id = ?",
-      [paymentMethodID]
+    const [existingBanner] = await db.query(
+      "SELECT * FROM banner WHERE id = ?",
+      [bannerID]
     );
 
-    if (!existingPaymentMethod || existingPaymentMethod.length === 0) {
+    if (!existingBanner || existingBanner.length === 0) {
       return res.status(404).send({
         success: false,
-        message: "paymentMethod not found",
+        message: "Banner not found",
       });
     }
 
     // Execute the update query
     const [result] = await db.query(
-      `UPDATE paymentMethod SET logoImage=?, methodName=?, acocuntNumber=?, accountType=?, charge =? WHERE id = ?`,
+      `UPDATE banner SET title=?, image=?, category_id=? WHERE id = ?`,
       [
-        logoImage || existingPaymentMethod[0].logoImage,
-        methodName || existingPaymentMethod[0].methodName,
-        acocuntNumber || existingPaymentMethod[0].acocuntNumber,
-        accountType || existingPaymentMethod[0].accountType,
-        charge || existingPaymentMethod[0].charge,
-        paymentMethodID,
+        title || existingBanner[0].title,
+        image || existingBanner[0].image,
+        category_id || existingBanner[0].category_id,
+        bannerID,
       ]
     );
 
-    // Check if the paymentMethod was updated successfully
+    // Check if the banner was updated successfully
     if (result.affectedRows === 0) {
       return res.status(404).send({
         success: false,
-        message: "paymentMethod not changes made",
+        message: "banner not changes made",
       });
     }
 
     // Success response
     res.status(200).send({
       success: true,
-      message: "paymentMethod updated successfully",
+      message: "banner updated successfully",
     });
   } catch (error) {
     // Handle errors
     res.status(500).send({
       success: false,
-      message: "Error updating paymentMethod",
+      message: "Error updating banner",
       error: error.message,
     });
   }
 };
 
-// delete PaymentMethod
+// delete Banner
 exports.deleteBanner = async (req, res) => {
   try {
-    const paymentMethodID = req.params.id;
+    const bannerID = req.params.id;
 
-    // Check if the paymentMethod exists in the database
-    const [paymentMethodData] = await db.query(
-      `SELECT * FROM paymentMethod WHERE id = ?`,
-      [paymentMethodID]
+    // Check if book exists
+    const [existingBanner] = await db.query(
+      "SELECT * FROM banner WHERE id = ?",
+      [bannerID]
     );
 
-    // If paymentMethodData not found, return 404
-    if (paymentMethodData.length === 0) {
+    // If Banner not found, return 404
+    if (existingBanner.length === 0) {
       return res.status(404).send({
         success: false,
-        message: "paymentMethodData not found",
+        message: "Banner not found",
       });
     }
 
-    // Proceed to delete the paymentMethodData
-    const [result] = await db.query(`DELETE FROM paymentMethod WHERE id = ?`, [
-      paymentMethodID,
+    // Proceed to delete the Banner
+    const [result] = await db.query(`DELETE FROM banner WHERE id = ?`, [
+      bannerID,
     ]);
 
     // Check if deletion was successful
     if (result.affectedRows === 0) {
       return res.status(500).send({
         success: false,
-        message: "Failed to delete paymentMethod",
+        message: "Failed to delete banner",
       });
     }
 
     // Send success response
     res.status(200).send({
       success: true,
-      message: "paymentMethod deleted successfully",
+      message: "banner deleted successfully",
     });
   } catch (error) {
     res.status(500).send({
       success: false,
-      message: "Error deleting paymentMethod",
+      message: "Error deleting banner",
       error: error.message,
     });
   }
