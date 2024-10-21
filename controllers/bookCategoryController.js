@@ -94,3 +94,47 @@ exports.updateCategory = async (req, res) => {
     });
   }
 };
+
+// delete category
+exports.deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if the category exists in the database
+    const [categoryData] = await db.query(
+      `SELECT * FROM category WHERE id = ?`,
+      [id]
+    );
+
+    // If categoryData not found, return 404
+    if (categoryData.length === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "category not found",
+      });
+    }
+
+    // Proceed to delete the categoryData
+    const [result] = await db.query(`DELETE FROM category WHERE id = ?`, [id]);
+
+    // Check if deletion was successful
+    if (result.affectedRows === 0) {
+      return res.status(500).send({
+        success: false,
+        message: "Failed to delete category",
+      });
+    }
+
+    // Send success response
+    res.status(200).send({
+      success: true,
+      message: "category deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).send({
+      success: false,
+      message: "Error deleting category",
+      error: error.message,
+    });
+  }
+};

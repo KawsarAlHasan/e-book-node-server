@@ -5,8 +5,17 @@ exports.createDeliveryAddress = async (req, res) => {
   try {
     const user_id = req.decodedUser.id;
 
-    const { phone, contact, address, address_type, city, post_code, message } =
-      req.body;
+    const {
+      phone,
+      contact,
+      address,
+      address_type,
+      city,
+      post_code,
+      message,
+      division,
+      district,
+    } = req.body;
 
     // Check if category_name is provided
     if (!address || !phone) {
@@ -18,7 +27,7 @@ exports.createDeliveryAddress = async (req, res) => {
 
     // Insert category into the database
     const [result] = await db.query(
-      "INSERT INTO delivery_address (user_id, phone, contact, address, address_type, city, post_code,message) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO delivery_address (user_id, phone, contact, address, address_type, city, post_code, message, division, district) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         user_id,
         phone,
@@ -28,6 +37,8 @@ exports.createDeliveryAddress = async (req, res) => {
         city || "",
         post_code || "",
         message || "",
+        division || "",
+        district || "",
       ]
     );
 
