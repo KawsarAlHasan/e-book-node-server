@@ -281,6 +281,10 @@ exports.deleteBook = async (req, res) => {
     }
 
     // Proceed to delete the booksData
+    await db.query(`DELETE FROM main_toc WHERE book_id = ?`, [book_id]);
+    await db.query(`DELETE FROM sub_toc WHERE book_id = ?`, [book_id]);
+    await db.query(`DELETE FROM paragraph WHERE book_id = ?`, [book_id]);
+
     const [result] = await db.query(`DELETE FROM books WHERE book_id = ?`, [
       book_id,
     ]);

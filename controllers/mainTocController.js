@@ -335,6 +335,11 @@ exports.deleteMainTOC = async (req, res) => {
     }
 
     // Proceed to delete the MainTOC
+    await db.query(`DELETE FROM sub_toc WHERE main_toc_id = ?`, [main_toc_id]);
+    await db.query(`DELETE FROM paragraph WHERE main_toc_id = ?`, [
+      main_toc_id,
+    ]);
+
     const [result] = await db.query(
       `DELETE FROM main_toc WHERE main_toc_id = ?`,
       [main_toc_id]
