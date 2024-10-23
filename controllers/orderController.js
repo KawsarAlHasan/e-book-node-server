@@ -70,11 +70,16 @@ exports.getMyOrder = async (req, res) => {
 
     const [data] = await db.query(
       `SELECT 
-        o.*, 
-        b.*
-      FROM orders o 
-      JOIN books b ON o.book_id = b.book_id 
-      WHERE o.user_id = ? ORDER BY o.id DESC`,
+          o.*, 
+          b.*, 
+          COUNT(r.rating) AS total_ratings, 
+          COALESCE(AVG(r.rating), 0) AS average_rating
+       FROM orders o
+       JOIN books b ON o.book_id = b.book_id
+       LEFT JOIN rating r ON b.book_id = r.book_id
+       WHERE o.user_id = ? 
+       GROUP BY o.id, b.book_id
+       ORDER BY o.id DESC`,
       [user_id]
     );
 
@@ -103,11 +108,13 @@ exports.getAllOrder = async (req, res) => {
     const [data] = await db.query(
       `SELECT 
         o.*, 
-        b.*
+        b.*,
+        COUNT(r.rating) AS total_ratings,
+        COALESCE(AVG(r.rating), 0) AS average_rating
       FROM orders o 
       JOIN books b ON o.book_id = b.book_id 
-      ORDER BY o.id DESC
-      `
+      LEFT JOIN rating r ON b.book_id = r.book_id
+      ORDER BY o.id DESC`
     );
 
     res.status(200).send({
@@ -131,11 +138,15 @@ exports.getSingleOrder = async (req, res) => {
 
     const [data] = await db.query(
       `SELECT 
-        o.*, 
-        b.*
-      FROM orders o 
-      JOIN books b ON o.book_id = b.book_id 
-      WHERE o.id = ?`,
+          o.*, 
+          b.*, 
+          COUNT(r.rating) AS total_ratings, 
+          COALESCE(AVG(r.rating), 0) AS average_rating
+       FROM orders o
+       JOIN books b ON o.book_id = b.book_id
+       LEFT JOIN rating r ON b.book_id = r.book_id
+       WHERE o.id = ?
+       GROUP BY o.id, b.book_id`,
       [orderId]
     );
 
