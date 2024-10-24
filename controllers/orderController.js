@@ -107,13 +107,15 @@ exports.getAllOrder = async (req, res) => {
   try {
     const [data] = await db.query(
       `SELECT 
+        o.id AS order_id, 
         o.*, 
-        b.*,
+        b.*, 
         COUNT(r.rating) AS total_ratings,
         COALESCE(AVG(r.rating), 0) AS average_rating
-      FROM orders o 
-      JOIN books b ON o.book_id = b.book_id 
+      FROM orders o
+      LEFT JOIN books b ON o.book_id = b.book_id
       LEFT JOIN rating r ON b.book_id = r.book_id
+      GROUP BY o.id, b.book_id
       ORDER BY o.id DESC`
     );
 
