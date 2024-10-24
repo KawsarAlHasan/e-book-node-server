@@ -72,10 +72,20 @@ exports.getMyOrder = async (req, res) => {
       `SELECT 
           o.*, 
           b.*, 
+          da.phone AS delivery_phone,
+        da.contact AS delivery_contact,
+        da.address AS delivery_address,
+        da.address_type AS delivery_address_type,
+        da.city AS delivery_city,
+        da.post_code AS delivery_post_code,
+        da.message AS delivery_message,
+        da.division AS delivery_division,
+        da.district AS delivery_district,
           COUNT(r.rating) AS total_ratings, 
           COALESCE(AVG(r.rating), 0) AS average_rating
        FROM orders o
        JOIN books b ON o.book_id = b.book_id
+       JOIN delivery_address da ON o.delivery_address_id = da.id
        LEFT JOIN rating r ON b.book_id = r.book_id
        WHERE o.user_id = ? 
        GROUP BY o.id, b.book_id
@@ -110,10 +120,20 @@ exports.getAllOrder = async (req, res) => {
         o.id AS order_id, 
         o.*, 
         b.*, 
+        da.phone AS delivery_phone,
+        da.contact AS delivery_contact,
+        da.address AS delivery_address,
+        da.address_type AS delivery_address_type,
+        da.city AS delivery_city,
+        da.post_code AS delivery_post_code,
+        da.message AS delivery_message,
+        da.division AS delivery_division,
+        da.district AS delivery_district,
         COUNT(r.rating) AS total_ratings,
         COALESCE(AVG(r.rating), 0) AS average_rating
       FROM orders o
       LEFT JOIN books b ON o.book_id = b.book_id
+      JOIN delivery_address da ON o.delivery_address_id = da.id
       LEFT JOIN rating r ON b.book_id = r.book_id
       GROUP BY o.id, b.book_id
       ORDER BY o.id DESC`
@@ -142,10 +162,20 @@ exports.getSingleOrder = async (req, res) => {
       `SELECT 
           o.*, 
           b.*, 
+         da.phone AS delivery_phone,
+        da.contact AS delivery_contact,
+        da.address AS delivery_address,
+        da.address_type AS delivery_address_type,
+        da.city AS delivery_city,
+        da.post_code AS delivery_post_code,
+        da.message AS delivery_message,
+        da.division AS delivery_division,
+        da.district AS delivery_district,
           COUNT(r.rating) AS total_ratings, 
           COALESCE(AVG(r.rating), 0) AS average_rating
        FROM orders o
        JOIN books b ON o.book_id = b.book_id
+       JOIN delivery_address da ON o.delivery_address_id = da.id
        LEFT JOIN rating r ON b.book_id = r.book_id
        WHERE o.id = ?
        GROUP BY o.id, b.book_id`,
