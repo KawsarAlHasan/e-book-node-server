@@ -192,6 +192,10 @@ exports.deleteParagraph = async (req, res) => {
       });
     }
 
+    await db.query("UPDATE sub_toc SET is_paragraph = 0 WHERE sub_toc_id = ?", [
+      SubTOC[0].sub_toc_id,
+    ]);
+
     // Send success response
     res.status(200).send({
       success: true,
