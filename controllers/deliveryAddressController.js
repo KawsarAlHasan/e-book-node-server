@@ -105,12 +105,21 @@ exports.updateDeliveryAddress = async (req, res) => {
       });
     }
 
-    const { phone, contact, address, address_type, city, post_code, message } =
-      req.body;
+    const {
+      phone,
+      contact,
+      address,
+      address_type,
+      city,
+      post_code,
+      message,
+      division,
+      district,
+    } = req.body;
 
     // Execute the update query
     const [result] = await db.query(
-      "UPDATE delivery_address SET phone=?, contact=?, address=?, address_type=?, city=?, post_code=?, message=? WHERE id = ?",
+      "UPDATE delivery_address SET phone=?, contact=?, address=?, address_type=?, city=?, post_code=?, message=?, division=?, district=? WHERE id = ?",
       [
         phone || data[0].phone,
         contact || data[0].contact,
@@ -119,6 +128,8 @@ exports.updateDeliveryAddress = async (req, res) => {
         city || data[0].city,
         post_code || data[0].post_code,
         message || data[0].message,
+        division || data[0].division,
+        district || data[0].district,
         id,
       ]
     );
