@@ -4,10 +4,10 @@ const db = require("../config/db");
 exports.createCoupons = async (req, res) => {
   try {
     const { code, discount_price, expiration_date, is_active } = req.body;
-    if (!code || !discount_price || !expiration_date) {
+    if (!code || !discount_price) {
       return res.status(400).send({
         success: false,
-        message: "Please provide code, discount_price, expiration_date field",
+        message: "Please provide code, discount_price field",
       });
     }
 
@@ -25,7 +25,7 @@ exports.createCoupons = async (req, res) => {
     // Insert coupons into the database
     const [result] = await db.query(
       "INSERT INTO coupons (code, discount_price, expiration_date, is_active) VALUES (?, ?, ?, ?)",
-      [code, discount_price, expiration_date, is_active || 1]
+      [code, discount_price, expiration_date || "2025-10-28", is_active || 1]
     );
 
     // Check if the insertion was successful
