@@ -35,6 +35,7 @@ app.use("/api/v1/rating", require("./routes/ratingRoute"));
 app.use("/api/v1/delivery-address", require("./routes/deliveryAddressRoute"));
 app.use("/api/v1/payment-method", require("./routes/paymentMethodRoute"));
 app.use("/api/v1/banner", require("./routes/bannerRoute"));
+app.use("/api/v1/coupons", require("./routes/couponsRoute"));
 
 const port = process.env.PORT || 5000;
 
