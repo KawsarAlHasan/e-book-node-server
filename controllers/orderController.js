@@ -7,6 +7,7 @@ exports.createOrder = async (req, res) => {
     const {
       book_id,
       price,
+      discount_price,
       delivery_address_id,
       delivery_fee,
       quantity,
@@ -32,12 +33,13 @@ exports.createOrder = async (req, res) => {
 
     // Insert into `orders` table
     const [orderResult] = await db.execute(
-      `INSERT INTO orders (user_id, book_id, price, delivery_address_id, delivery_fee, quantity, total_price, payment_method)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO orders (user_id, book_id, price, discount_price, delivery_address_id, delivery_fee, quantity, total_price, payment_method)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         user_id,
         book_id,
         price,
+        discount_price,
         delivery_address_id,
         delivery_fee,
         quantity,
@@ -120,6 +122,7 @@ exports.getAllOrder = async (req, res) => {
         o.id AS order_id, 
         o.*, 
         b.*, 
+        da.id AS delivery_id,
         da.phone AS delivery_phone,
         da.contact AS delivery_contact,
         da.address AS delivery_address,
@@ -158,38 +161,49 @@ exports.getSingleOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
 
+    // Query to get single order
     const [data] = await db.query(
       `SELECT 
           o.*, 
           b.*, 
-         da.phone AS delivery_phone,
-        da.contact AS delivery_contact,
-        da.address AS delivery_address,
-        da.address_type AS delivery_address_type,
-        da.city AS delivery_city,
-        da.post_code AS delivery_post_code,
-        da.message AS delivery_message,
-        da.division AS delivery_division,
-        da.district AS delivery_district,
+          da.id AS delivery_id,
+          da.phone AS delivery_phone,
+          da.contact AS delivery_contact,
+          da.address AS delivery_address,
+          da.address_type AS delivery_address_type,
+          da.city AS delivery_city,
+          da.post_code AS delivery_post_code,
+          da.message AS delivery_message,
+          da.division AS delivery_division,
+          da.district AS delivery_district,
           COUNT(r.rating) AS total_ratings, 
           COALESCE(AVG(r.rating), 0) AS average_rating
        FROM orders o
-       JOIN books b ON o.book_id = b.book_id
-       JOIN delivery_address da ON o.delivery_address_id = da.id
+       LEFT JOIN books b ON o.book_id = b.book_id
+       LEFT JOIN delivery_address da ON o.delivery_address_id = da.id
        LEFT JOIN rating r ON b.book_id = r.book_id
        WHERE o.id = ?
        GROUP BY o.id, b.book_id`,
       [orderId]
     );
 
+    // Check if order data exists
+    if (!data || data.length === 0) {
+      return res.status(404).send({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Fetch user data only if order data exists (uncomment if necessary)
     const [userData] = await db.query(`SELECT * FROM users WHERE id = ?`, [
       data[0].user_id,
     ]);
 
     res.status(200).send({
       success: true,
-      message: "Get Single Orders",
-      userData: userData[0],
+      message: "Get Single Order",
+      userData: userData[0] || null,
       ordersData: data,
     });
   } catch (error) {
