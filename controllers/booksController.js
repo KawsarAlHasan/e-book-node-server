@@ -17,6 +17,7 @@ exports.createBooks = async (req, res) => {
       publisher_name,
       free_or_paid,
       price,
+      sell_price,
       total_pages,
       sort_description,
       dedication,
@@ -33,7 +34,7 @@ exports.createBooks = async (req, res) => {
 
     // Insert books into the database
     const [result] = await db.query(
-      "INSERT INTO books (book_name, image, category_id, author, title, language, publisher, publication_year, first_edition_year, last_edition_year, publisher_name, free_or_paid, price, total_pages, sort_description, dedication, author_bio, introduction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO books (book_name, image, category_id, author, title, language, publisher, publication_year, first_edition_year, last_edition_year, publisher_name, free_or_paid, price, sell_price, total_pages, sort_description, dedication, author_bio, introduction) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         book_name,
         image,
@@ -48,6 +49,7 @@ exports.createBooks = async (req, res) => {
         publisher_name || "NULL",
         free_or_paid || "Free",
         price || 0,
+        sell_price || 0,
         total_pages || 0,
         sort_description || "",
         dedication || "NULL",
@@ -192,6 +194,7 @@ exports.updateBook = async (req, res) => {
       publisher_name,
       free_or_paid,
       price,
+      sell_price,
       total_pages,
       sort_description,
       dedication,
@@ -214,7 +217,7 @@ exports.updateBook = async (req, res) => {
 
     // Execute the update query
     const [result] = await db.query(
-      `UPDATE books SET book_name=?, image=?, category_id=?, author=?, title =?, language=?, publisher=?, publication_year=?, first_edition_year=?, last_edition_year=?, publisher_name=?, free_or_paid=?, price=?, total_pages=?, sort_description=?, dedication=?, author_bio=?, introduction=? WHERE book_id = ?`,
+      `UPDATE books SET book_name=?, image=?, category_id=?, author=?, title =?, language=?, publisher=?, publication_year=?, first_edition_year=?, last_edition_year=?, publisher_name=?, free_or_paid=?, price=?, sell_price=?, total_pages=?, sort_description=?, dedication=?, author_bio=?, introduction=? WHERE book_id = ?`,
       [
         book_name || existingBook[0].book_name,
         image || existingBook[0].image,
@@ -229,6 +232,7 @@ exports.updateBook = async (req, res) => {
         publisher_name || existingBook[0].publisher_name,
         free_or_paid || existingBook[0].free_or_paid,
         price || existingBook[0].price,
+        sell_price || existingBook[0].sell_price,
         total_pages || existingBook[0].total_pages,
         sort_description || existingBook[0].sort_description,
         dedication || existingBook[0].dedication,
