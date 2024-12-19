@@ -39,7 +39,7 @@ exports.createParagraph = async (req, res) => {
 
     const paraID = result.insertId;
 
-    if (mark_text) {
+    if (mark_text.length > 0) {
       const markTextQuery =
         "INSERT INTO mark_text (para_id, text, definition) VALUES ?";
       const markTextValues = mark_text.map((markText) => [
