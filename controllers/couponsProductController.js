@@ -49,7 +49,7 @@ exports.createDiscountCoupons = async (req, res) => {
       for (const book of book_list_for_coupons) {
         await db.query(
           "INSERT INTO book_list_for_coupons (coupons_id, book_id) VALUES (?, ?)",
-          [couponsID, book.book_id]
+          [couponsID, book]
         );
       }
     }
@@ -92,9 +92,7 @@ exports.getAllCouponsDiscount = async (req, res) => {
 
       result.push({
         ...coupon,
-        book_list_for_coupons: books.map((book) => ({
-          book_id: book.book_id,
-        })),
+        book_list_for_coupons: books.map((book) => book.book_id),
       });
     }
 
@@ -179,6 +177,19 @@ exports.updateCouponsDiscount = async (req, res) => {
         success: false,
         message: "This Code already used",
       });
+    }
+
+    await db.query(`DELETE FROM book_list_for_coupons WHERE coupons_id=?`, [
+      id,
+    ]);
+
+    if (book_list_for_coupons.length > 0) {
+      for (const book of book_list_for_coupons) {
+        await db.query(
+          "INSERT INTO book_list_for_coupons (coupons_id, book_id) VALUES (?, ?)",
+          [id, book]
+        );
+      }
     }
 
     // Check if coupons exists
