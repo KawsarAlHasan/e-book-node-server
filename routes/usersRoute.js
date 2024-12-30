@@ -11,6 +11,7 @@ const {
   updateUser,
   updateStatus,
   deleteUser,
+  userFirebaseSignup,
 } = require("../controllers/usersController");
 const uploadImage = require("../middleware/imagesUploader");
 
@@ -19,6 +20,7 @@ const router = express.Router();
 router.get("/all", getAllUsers); //all users for admin
 router.get("/me", verifyUser, getMeUser);
 router.post("/signup", userSignup);
+router.post("/firebase", userFirebaseSignup);
 router.post("/login", userLogin);
 router.put("/update", verifyUser, updateUser);
 router.put("/update-password", verifyUser, updateUserPassword);

@@ -203,6 +203,58 @@ exports.userSignup = async (req, res) => {
   }
 };
 
+// firebase user login or signup
+exports.userFirebaseSignup = async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+
+    // Check if email already exists
+    const [existingUser] = await db.query(`SELECT * FROM users WHERE email=?`, [
+      email,
+    ]);
+
+    let user = [];
+    let loginOrSignup = "";
+    if (existingUser.length > 0) {
+      user = existingUser[0];
+      loginOrSignup = "Login";
+    } else {
+      // Insert the user
+      const [data] = await db.query(
+        `INSERT INTO users (name, email, phone) VALUES (?, ?, ?)`,
+        [name, email, phone]
+      );
+
+      // Fetch and return the new user's information
+      const [results] = await db.query(`SELECT * FROM users WHERE id=?`, [
+        data.insertId,
+      ]);
+      user = results[0];
+      loginOrSignup = "Signup";
+    }
+
+    // Generate JWT token
+    const token = generateUserToken(user);
+
+    // Return success message along with the user data
+    res.status(200).send({
+      success: true,
+      message: `User ${loginOrSignup} successfully`,
+      data: {
+        user,
+        token,
+      },
+    });
+  } catch (error) {
+    // Handle server error
+    res.status(500).send({
+      success: false,
+      message: `Error in ${loginOrSignup} User API`,
+      error: error.message,
+    });
+  }
+};
+
 // user login
 exports.userLogin = async (req, res) => {
   try {
