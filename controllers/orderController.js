@@ -86,8 +86,8 @@ exports.getMyOrder = async (req, res) => {
           COUNT(r.rating) AS total_ratings, 
           COALESCE(AVG(r.rating), 0) AS average_rating
        FROM orders o
-       JOIN books b ON o.book_id = b.book_id
-       JOIN delivery_address da ON o.delivery_address_id = da.id
+      JOIN books b ON o.book_id = b.book_id
+       LEFT JOIN delivery_address da ON o.delivery_address_id = da.id
        LEFT JOIN rating r ON b.book_id = r.book_id
        WHERE o.user_id = ? 
        GROUP BY o.id, b.book_id
