@@ -123,19 +123,10 @@ exports.userSignup = async (req, res) => {
     const { name, email, password, phone } = req.body;
 
     // Check input fields
-    if (!name || !email || !password || !phone) {
+    if (!name || !password) {
       return res.status(400).send({
         success: false,
-        message: "Please provide name, email, password & phone",
-      });
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).send({
-        success: false,
-        message: "Invalid email format",
+        message: "Please provide name, password",
       });
     }
 
@@ -150,34 +141,79 @@ exports.userSignup = async (req, res) => {
     // Hashing password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Check if email already exists
-    const [existingUser] = await db.query(`SELECT * FROM users WHERE email=?`, [
-      email,
-    ]);
+    let newInsertId = 0;
 
-    if (existingUser.length > 0) {
+    if (phone) {
+      // Check if phone already exists
+      const [existingUser] = await db.query(
+        `SELECT * FROM users WHERE phone=?`,
+        [phone]
+      );
+
+      if (existingUser.length > 0) {
+        return res.status(400).send({
+          success: false,
+          message: "Phone already registered",
+        });
+      }
+
+      const [phoneData] = await db.query(
+        `INSERT INTO users (name, password, phone) VALUES (?, ?, ?)`,
+        [name, hashedPassword, phone]
+      );
+
+      if (!phoneData || !phoneData.insertId) {
+        return res.status(500).send({
+          success: false,
+          message: "Error in creating user",
+        });
+      }
+      newInsertId = phoneData.insertId;
+    } else if (email) {
+      // Email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).send({
+          success: false,
+          message: "Invalid email format",
+        });
+      }
+
+      // Check if email already exists
+      const [existingUser] = await db.query(
+        `SELECT * FROM users WHERE email=?`,
+        [email]
+      );
+
+      if (existingUser.length > 0) {
+        return res.status(400).send({
+          success: false,
+          message: "Email already registered",
+        });
+      }
+
+      const [data] = await db.query(
+        `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`,
+        [name, email, hashedPassword]
+      );
+
+      if (!data || !data.insertId) {
+        return res.status(500).send({
+          success: false,
+          message: "Error in creating user",
+        });
+      }
+      newInsertId = data.insertId;
+    } else {
       return res.status(400).send({
         success: false,
-        message: "Email already registered",
-      });
-    }
-
-    // Insert the user
-    const [data] = await db.query(
-      `INSERT INTO users (name, email, password, phone) VALUES (?, ?, ?, ?)`,
-      [name, email, hashedPassword, phone]
-    );
-
-    if (!data || !data.insertId) {
-      return res.status(500).send({
-        success: false,
-        message: "Error in creating user",
+        message: "Please provide email or phone",
       });
     }
 
     // Fetch and return the new user's information
     const [results] = await db.query(`SELECT * FROM users WHERE id=?`, [
-      data.insertId,
+      newInsertId,
     ]);
     const user = results[0];
 
@@ -258,28 +294,51 @@ exports.userFirebaseSignup = async (req, res) => {
 // user login
 exports.userLogin = async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
+    const { phone, email, password } = req.body;
+    if (!password) {
       return res.status(401).json({
         success: false,
         error: "Please provide your credentials",
       });
     }
-    const [results] = await db.query(`SELECT * FROM users WHERE email=?`, [
-      email,
-    ]);
-    if (results.length === 0) {
+
+    let users;
+
+    if (phone) {
+      const [phoneResult] = await db.query(
+        `SELECT * FROM users WHERE phone=?`,
+        [phone]
+      );
+      if (phoneResult.length === 0) {
+        return res.status(401).json({
+          success: false,
+          error: "Phone and Password is not correct",
+        });
+      }
+      users = phoneResult[0];
+    } else if (email) {
+      const [results] = await db.query(`SELECT * FROM users WHERE email=?`, [
+        email,
+      ]);
+      if (results.length === 0) {
+        return res.status(401).json({
+          success: false,
+          error: "Email and Password is not correct",
+        });
+      }
+      users = results[0];
+    } else {
       return res.status(401).json({
         success: false,
-        error: "Email and Password is not correct",
+        error: "Please provide your credentials",
       });
     }
-    const users = results[0];
+
     const isMatch = await bcrypt.compare(password, users.password);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        error: "Email and Password is not correct",
+        error: "Password is not correct",
       });
     }
     const token = generateUserToken(users);
