@@ -316,7 +316,7 @@ exports.deleteBook = async (req, res) => {
 };
 
 // get book main toc with sub toc
-exports.getBookWithMainTocAndSubToc = async (req, res) => {
+exports.getBookWithMainTocAndSubToc3 = async (req, res) => {
   try {
     const book_id = req.params.id;
 
@@ -427,3 +427,211 @@ exports.getBookWithMainTocAndSubToc = async (req, res) => {
     });
   }
 };
+
+// get book main toc with sub toc
+exports.getBookWithMainTocAndSubToc = async (req, res) => {
+  try {
+    const book_id = req.params.id;
+
+    // Fetch related book info
+    const [book] = await db.query(
+      `SELECT book_id, book_name, image FROM books WHERE book_id = ?`,
+      [book_id]
+    );
+
+    // "id": 27,
+    //         "name": "Chapter Free",
+    //         "book_id": "20",
+    //         "page_number": 5,
+    //         "look_status": "Unlock",
+    //         "created_at": "2024-11-08T23:07:30.000Z",
+    //         "updated_at": "2024-11-08T23:07:30.000Z",
+
+    // "name": "বাদামতলায় রামজীবনের পাকা ঘর",
+    // "book_id": "10",
+    // "page_number": 5,
+
+    // Fetch main TOC with sub TOC using JOIN
+    const [tocData] = await db.query(
+      `
+      SELECT
+        mt.main_toc_id AS main_toc_id,
+        mt.title AS main_toc_name,
+        mt.book_id AS book_id,
+        mt.page_number AS main_toc_page_number,
+        mt.look_status AS main_toc_look_status,
+        st.sub_toc_id AS sub_toc_id,
+        st.main_toc_id AS sub_toc_main_toc_id,
+        st.title AS sub_toc_name,
+        st.book_id AS sub_toc_book_id,
+        st.page_number AS sub_toc_page_number,
+        st.look_status AS sub_toc_look_status,
+        st.is_paragraph AS sub_toc_is_paragraph
+      FROM main_toc mt
+      LEFT JOIN sub_toc st ON mt.main_toc_id = st.main_toc_id
+      WHERE mt.book_id = ?
+      `,
+      [book_id]
+    );
+
+    // Organize the TOC data into main TOCs with their sub TOCs
+    const tocMap = {};
+    tocData.forEach((row) => {
+      const {
+        main_toc_id,
+        main_toc_name,
+        main_toc_page_number,
+        main_toc_look_status,
+        sub_toc_id,
+        sub_toc_main_toc_id,
+        sub_toc_name,
+        sub_toc_page_number,
+        sub_toc_look_status,
+        sub_toc_is_paragraph,
+      } = row;
+
+      // If the main TOC is not already in the map, add it
+      if (!tocMap[main_toc_id]) {
+        tocMap[main_toc_id] = {
+          id: main_toc_id,
+          name: main_toc_name,
+          book_id: book_id,
+          page_number: main_toc_page_number,
+          look_status: main_toc_look_status,
+          sub_tocs: [],
+        };
+      }
+
+      // If the row has a sub TOC, add it to the main TOC
+      if (sub_toc_id) {
+        tocMap[main_toc_id].sub_tocs.push({
+          id: sub_toc_id,
+          main_toc_id: sub_toc_main_toc_id,
+          name: sub_toc_name,
+          page_number: sub_toc_page_number,
+          look_status: sub_toc_look_status,
+          is_paragraph: sub_toc_is_paragraph,
+        });
+      }
+    });
+
+    // Convert the TOC map to an array
+    const result = Object.values(tocMap);
+
+    // Send success response
+    res.status(200).send({
+      success: true,
+      message: "Get Book With Main TOC and Sub TOC",
+      // bookInfo: book[0],
+      totalMainTocs: result.length,
+      mainTOC: result,
+    });
+  } catch (error) {
+    // Handle any errors
+    res.status(500).send({
+      success: false,
+      message: "Error in retrieving Book",
+      error: error.message,
+    });
+  }
+};
+
+//   "main_topic" : [
+//       {
+//            "name": "বাদামতলায় রামজীবনের পাকা ঘর",
+//            "book_id": "10",
+//           "page_number": 5,
+//           "sub_tocs" : [
+//               {
+//                    "main_toc_id": 14,
+//                   "name": "বুঝলে একমাত্র নয়নতারাই বুঝবে",
+//                   "page_number": 1,
+//                   "content" : {
+//                       "content" : "",
+//                       "total_page" : "",
+//                       "markTextData" : [
+//                           {
+//                               "text": "মাথাটা ঠিক থাকছে",
+//           "definition": " মাথাটা ঠিক থাকছে না। শরীরটা দুর্বল লাগছে। বিছানায় বসে সে একদৃষ্টে নিমাইয়ের স্যুটকেস গোছানো দেখছে। শুধু সুটকেস নয়, নিমাই গোছাচ্ছে তার আখের। এ দেশে মেয়ে হয়ে জন্মাননা যে কত বড় পাপ তা বীণাপাণির",
+//                           },
+//                           {
+//                               "text": "মাথাটা ঠিক থাকছে",
+//           "definition": " মাথাটা ঠিক থাকছে না। শরীরটা দুর্বল লাগছে। বিছানায় বসে সে একদৃষ্টে নিমাইয়ের স্যুটকেস গোছানো দেখছে। শুধু সুটকেস নয়, নিমাই গোছাচ্ছে তার আখের। এ দেশে মেয়ে হয়ে জন্মাননা যে কত বড় পাপ তা বীণাপাণির",
+//                           }
+//                       ]
+//                   }
+
+//               },
+//                 {
+//                    "main_toc_id": 14,
+//                   "name": "বুঝলে একমাত্র নয়নতারাই বুঝবে",
+//                   "page_number": 1,
+//                   "content" : {
+//                       "content" : "",
+//                       "total_page" : "",
+//                       "markTextData" : [
+//                           {
+//                               "text": "মাথাটা ঠিক থাকছে",
+//           "definition": " মাথাটা ঠিক থাকছে না। শরীরটা দুর্বল লাগছে। বিছানায় বসে সে একদৃষ্টে নিমাইয়ের স্যুটকেস গোছানো দেখছে। শুধু সুটকেস নয়, নিমাই গোছাচ্ছে তার আখের। এ দেশে মেয়ে হয়ে জন্মাননা যে কত বড় পাপ তা বীণাপাণির",
+//                           },
+//                           {
+//                               "text": "মাথাটা ঠিক থাকছে",
+//           "definition": " মাথাটা ঠিক থাকছে না। শরীরটা দুর্বল লাগছে। বিছানায় বসে সে একদৃষ্টে নিমাইয়ের স্যুটকেস গোছানো দেখছে। শুধু সুটকেস নয়, নিমাই গোছাচ্ছে তার আখের। এ দেশে মেয়ে হয়ে জন্মাননা যে কত বড় পাপ তা বীণাপাণির",
+//                           }
+//                       ]
+//                   }
+
+//               },
+//           ]
+
+//       },
+//        {
+//            "name": "বাদামতলায় রামজীবনের পাকা ঘর",
+//            "book_id": "10",
+//           "page_number": 5,
+//           "sub_tocs" : [
+//               {
+//                    "main_toc_id": 14,
+//                   "name": "বুঝলে একমাত্র নয়নতারাই বুঝবে",
+//                   "page_number": 1,
+//                   "content" : {
+//                       "content" : "",
+//                       "total_page" : "",
+//                       "markTextData" : [
+//                           {
+//                               "text": "মাথাটা ঠিক থাকছে",
+//           "definition": " মাথাটা ঠিক থাকছে না। শরীরটা দুর্বল লাগছে। বিছানায় বসে সে একদৃষ্টে নিমাইয়ের স্যুটকেস গোছানো দেখছে। শুধু সুটকেস নয়, নিমাই গোছাচ্ছে তার আখের। এ দেশে মেয়ে হয়ে জন্মাননা যে কত বড় পাপ তা বীণাপাণির",
+//                           },
+//                           {
+//                               "text": "মাথাটা ঠিক থাকছে",
+//           "definition": " মাথাটা ঠিক থাকছে না। শরীরটা দুর্বল লাগছে। বিছানায় বসে সে একদৃষ্টে নিমাইয়ের স্যুটকেস গোছানো দেখছে। শুধু সুটকেস নয়, নিমাই গোছাচ্ছে তার আখের। এ দেশে মেয়ে হয়ে জন্মাননা যে কত বড় পাপ তা বীণাপাণির",
+//                           }
+//                       ]
+//                   }
+
+//               },
+//                 {
+//                    "main_toc_id": 14,
+//                   "name": "বুঝলে একমাত্র নয়নতারাই বুঝবে",
+//                   "page_number": 1,
+//                   "content" : {
+//                       "content" : "",
+//                       "total_page" : "",
+//                       "markTextData" : [
+//                           {
+//                               "text": "মাথাটা ঠিক থাকছে",
+//           "definition": " মাথাটা ঠিক থাকছে না। শরীরটা দুর্বল লাগছে। বিছানায় বসে সে একদৃষ্টে নিমাইয়ের স্যুটকেস গোছানো দেখছে। শুধু সুটকেস নয়, নিমাই গোছাচ্ছে তার আখের। এ দেশে মেয়ে হয়ে জন্মাননা যে কত বড় পাপ তা বীণাপাণির",
+//                           },
+//                           {
+//                               "text": "মাথাটা ঠিক থাকছে",
+//           "definition": " মাথাটা ঠিক থাকছে না। শরীরটা দুর্বল লাগছে। বিছানায় বসে সে একদৃষ্টে নিমাইয়ের স্যুটকেস গোছানো দেখছে। শুধু সুটকেস নয়, নিমাই গোছাচ্ছে তার আখের। এ দেশে মেয়ে হয়ে জন্মাননা যে কত বড় পাপ তা বীণাপাণির",
+//                           }
+//                       ]
+//                   }
+
+//               },
+//           ]
+
+//       }
+//   ]
+// }
